@@ -1,11 +1,9 @@
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../hax-behaviors/hax-behaviors.html">
 <link rel="import" href="../materializecss-styles/materializecss-styles.html">
+<link rel="import" href="../hax-body-behaviors/hax-body-behaviors.html">
+<link rel="import" href="../a11y-behaviors/a11y-behaviors.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../lrn-icons/lrn-icons.html">
-<link rel="import" href="../paper-tooltip/paper-tooltip.html">
-<link rel="import" href="../paper-swatch-picker/paper-swatch-picker.html">
-
-
 
 <!--
 `lrndesign-paperstack`
@@ -18,14 +16,12 @@ A LRN element
   <template>
     <style include="materializecss-styles"></style>
     <style>
-      @import url('https://fonts.googleapis.com/css?family=Inconsolata');
-
-       :host {
+      :host {
         display: block;
       }
 
       h1, h2, h3, h4, h5, h6 {
-        margin: 0 !important;
+        margin: 0;
       }
       /* Example card */
 
@@ -53,7 +49,7 @@ A LRN element
         line-height: 4em;
       }
 
-      lrn-icon {
+      iron-icon {
         font-size: 1em;
         height: 2em;
         width: 2em;
@@ -73,14 +69,6 @@ A LRN element
       .egletter h5 span,
       .egletter h6 span {
         line-height: 3em;
-      }
-
-      .egletterMode h2 span,
-      .egletterMode h3 span,
-      .egletterMode h4 span,
-      .egletterMode h5 span,
-      .egletterMode h6 span {
-        display: none;
       }
 
       .egletter {
@@ -116,73 +104,15 @@ A LRN element
         top: .1rem;
         transform: rotate(1.4deg);
       }
-
-       :host[mode="bold"] .egletter:before,
-       :host[mode="bold"] .egletter:after {
-        border: 1px black solid;
-        border-radius: 8px;
-      }
-
-       :host[mode="bold"] .egletter:before {
-        box-shadow: -7px 11px 16px rgba(0, 0, 0, 0.5);
-      }
-
-       :host[mode="bold"] .egletter:after {
-        box-shadow: 7px 8px 16px rgba(0, 0, 0, 0.5);
-      }
-
-       :host[mode="bold"] .egletterMode h2 span,
-       :host[mode="bold"] .egletterMode h3 span,
-       :host[mode="bold"] .egletterMode h4 span,
-       :host[mode="bold"] .egletterMode h5 span,
-       :host[mode="bold"] .egletterMode h6 span {
-        display: block;
-        transform: rotate(1.4deg);
-        margin-left: 1.5em;
-        padding: .5em;
-        border-radius: 15px 15px 0px 0px;
-        background-color: black;
-        color: #ecf0f1;
-        text-align: center;
-        width: 45%;
-        font-family: 'Inconsolata', monospace;
-      }
-
-       :host[mode="bold"] .egletter h2 span,
-       :host[mode="bold"] .egletter h3 span,
-       :host[mode="bold"] .egletter h4 span,
-       :host[mode="bold"] .egletter h5 span,
-       :host[mode="bold"] .egletter h6 span {
-        font-family: 'Inconsolata', monospace;
-      }
-
-       :host[mode="bold"] .egletter p {
-        font-family: 'Inconsolata', monospace;
-      }
     </style>
-    <div class="egletterMode">
-      <h4>
-        <span class$="{{textColor}}"><hax-editable edit="{{edit}}" type="textfield">{{heading}}</hax-editable></span>
-      </h4>
-    </div>
     <div class="egletter">
-      <hax-editbar edit="{{edit}}">
-        <paper-swatch-picker id="itemcolor" color="{{colorCode}}"></paper-swatch-picker>
-        <paper-tooltip for="itemcolor">Background color</paper-tooltip>
-        <paper-swatch-picker id="textcolor" color="{{textColorCode}}"></paper-swatch-picker>
-        <paper-tooltip for="textcolor">Text color</paper-tooltip>
-      </hax-editbar>
-      <h3>
-        <div class$="icon-container circle {{color}}">
-          <lrn-icon icon="{{icon}}" class$="{{textColor}}"></lrn-icon>
+      <h4>
+        <div class$="icon-container circle [[color]]">
+          <iron-icon icon="[[icon]]" class$="[[textColor]]"></iron-icon>
         </div>
-        <span><hax-editable edit="{{edit}}" type="textfield">{{title}}</hax-editable></span>
-      </h3>
-      <p>
-        <hax-editable edit="{{edit}}" type="html">
-          <content></content>
-        </hax-editable>
-      </p>
+        <span>[[title]]</span>
+      </h4>
+      <p><slot></slot></p>
     </div>
   </template>
 
@@ -190,7 +120,11 @@ A LRN element
     Polymer({
 
       is: 'lrndesign-paperstack',
-      behaviors: [HAXBehaviors.EditBehaviors, MaterializeCSSBehaviors.ColorBehaviors],
+      behaviors: [
+        HAXBehaviors.PropertiesBehaviors,
+        A11yBehaviors.A11y,
+        MaterializeCSSBehaviors.ColorBehaviors,
+      ],
       properties: {
         /**
          * Title
@@ -200,86 +134,133 @@ A LRN element
           value: 'Title',
         },
         /**
-         * LRN icon
+         * icon
          */
         icon: {
           type: String,
-          value: 'assignment',
+          value: 'lrn:assignment',
         },
         /**
          * Color code
          */
         colorCode: {
           type: String,
-          observer: '_colorChange',
+          value: '#000000',
+          observer: '_colorCodeChange',
         },
         /**
          * Color class
          */
         color: {
           type: String,
-          value: 'grey darken-4',
-          reflectToAttribute: true,
-          notify: true,
+          computed: '_computeColorClass(colorCode, "bg")',
         },
         /**
-         * Text color code
+         * Text color
          */
-        textColorCode: {
+        textCodeColor: {
           type: String,
-          observer: '_textColorChange',
+          value: '#ffffff',
         },
         /**
          * Text color class
          */
         textColor: {
           type: String,
-          value: 'white-text',
-          reflectToAttribute: true,
-          notify: true,
+          computed: '_computeColorClass(textCodeColor)',
         },
-        /**
-         * Mode Design
-         */
-        mode: {
-          type: String,
-          value: 'default',
-          reflectToAttribute: true,
-          notify: true
-        },
-        /**
-         * Heading
-         */
-        heading: {
-          type: String,
-          value: 'Heading',
-        },
+      },
+      /**
+       * Attached.
+       */
+      attached: function() {
+        // Establish hax properties if they exist
+        let props = {
+          'canScale': true,
+          'canPosition': true,
+          'canEditSource': false,
+          'gizmo': {
+            'title': 'Paper stack',
+            'description': 'A stack of papers',
+            'icon': 'icons:content-copy',
+            'color': 'grey',
+            'groups': ['Video', 'Media'],
+            'handles': [
+            ],
+            'meta': {
+              'author': 'LRNWebComponents'
+            }
+          },
+          'settings': {
+            'quick': [
+              {
+                'property': 'title',
+                'title': 'Title',
+                'description': 'Title of the cards',
+                'inputMethod': 'textfield',
+                'icon': 'editor:title',
+              },
+            ],
+            'configure': [
+              {
+                'property': 'title',
+                'title': 'Title',
+                'description': 'Title of the cards',
+                'inputMethod': 'boolean',
+              },
+              {
+                'property': 'colorCode',
+                'title': 'Color',
+                'description': 'Color of the card',
+                'inputMethod': 'colorpicker',
+              },
+              {
+                'property': 'icon',
+                'title': 'Icon',
+                'description': 'Icon for the card',
+                'inputMethod': 'iconpicker',
+              },
+              {
+                'slot': '',
+                'title': 'Contents',
+                'description': 'card contents',
+                'inputMethod': 'code-editor',
+              },
+            ],
+            'advanced': []
+          }
+        };
+        this.setHaxProperties(props);
       },
       /**
        * Notice the color change and shift it over to the class name.
        */
-      _colorChange: function () {
-        if (this.colorCode.substring(0, 1) == '#') {
-          this.color = this._colorTransform(this.colorCode, '', '');
+      _computeColorClass: function (color, bg) {
+        if (color != null && color.toLowerCase() == '#ffffff') {
+          if (bg == 'bg') {
+            return 'white';
+          }
+          return 'white-text';
+        }
+        else if (color != null && color == '#000000') {
+          if (bg == 'bg') {
+            return 'black';
+          }
+          return 'black-text';
+        }
+        else if (color != null && color.substring(0, 1) == '#') {
+          return this._colorTransform(color.toLowerCase(), '', '');
         }
       },
       /**
        * Text color change and shift it over to the class name.
        */
-      _textColorChange: function () {
-        if (this.textColorCode.substring(0, 1) == '#') {
-          this.textColor = this._colorTransform(this.textColorCode, '-text', 'text-');
+      _colorCodeChange: function (newValue, oldValue) {
+        if (typeof newValue !== typeof undefined && newValue != null) {
+          // sees if there's enough contrast and adjusts them accordingly
+          this.computeTextPropContrast('textCodeColor', 'colorCode');
         }
       },
-      /**
-       * Demo mode.
-       */
-      _demoInit: function () {
-        this.innerHTML =
-          "This is a great example, one of the best example I've ever seen. In fact, it's the best example ever produced and it says a lot about your content that you are about to see here.";
-        this.title = "A piece of content worth highlighting";
-        this.icon = 'assignment';
-      }
     });
   </script>
 </dom-module>
